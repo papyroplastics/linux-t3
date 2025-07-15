@@ -6,9 +6,11 @@ services:
     environment:
       MOODLE_DATABASE: ${MOODLE_DATABASE:?}
       WORDPRESS_DATABASE: ${WORDPRESS_DATABASE:?}
+      MASTODON_DATABASE: ${MASTODON_DATABASE:?}
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?}
     volumes:
       - mariadb_volume:/var/lib/mysql
+      - ./mariadb/create-dbs.sh:/docker-entrypoint-initdb.d/create-dbs.sh
       - ./mariadb/my.cnf:/etc/mysql/conf.d/my.cnf:ro
 
   moodle:
@@ -21,20 +23,34 @@ services:
       - moodle_volume:/bitnami/moodle
       - moodledata_volume:/bitnami/moodledata
     environment:
-      BITNAMI_DEBUG: true
       MOODLE_DATABASE_HOST: mariadb
       MOODLE_DATABASE_PORT_NUMBER: 3306
       MOODLE_DATABASE_NAME: ${MOODLE_DATABASE:?}
+      MOODLE_DATABASE_USER: ${MARIADB_USERNAME:?}
+      MOODLE_DATABASE_PASSWORD: ${MARIADB_PASSWORD:?}
 
-      MOODLE_DATABASE_USER: root
-      MOODLE_DATABASE_PASSWORD: ${MARIADB_ROOT_PASSWORD:?}
       MOODLE_USERNAME: ${MOODLE_USERNAME:?}
       MOODLE_PASSWORD: ${MOODLE_PASSWORD:?}
+      BITNAMI_DEBUG: ${DEBUG:?}
+
+  wordpress:
+    image: bitnami/wordpress
+    depends_on:
+      - mariadb
+    ports:
+      - 8080:80
+    volumes:
+      - wordpress_volume:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_PORT: 3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DATABASE:?}
+      WORDPRESS_DB_USER: ${MARIADB_USERNAME:?}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD:?}
 
 volumes:
   mariadb_volume:
-    driver: local
   moodle_volume:
-    driver: local
   moodledata_volume:
-    driver: local
+  wordpress_volume:
+  mastodon_volume:
