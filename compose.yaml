@@ -1,0 +1,40 @@
+name: tarea-3
+
+services:
+  mariadb:
+    image: mariadb:lts-ubi9
+    environment:
+      MOODLE_DATABASE: ${MOODLE_DATABASE:?}
+      WORDPRESS_DATABASE: ${WORDPRESS_DATABASE:?}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?}
+    volumes:
+      - mariadb_volume:/var/lib/mysql
+      - ./mariadb/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+
+  moodle:
+    image: bitnami/moodle:4.5
+    depends_on:
+      - mariadb
+    ports:
+      - 8081:8080
+    volumes:
+      - moodle_volume:/bitnami/moodle
+      - moodledata_volume:/bitnami/moodledata
+    environment:
+      BITNAMI_DEBUG: true
+      MOODLE_DATABASE_HOST: mariadb
+      MOODLE_DATABASE_PORT_NUMBER: 3306
+      MOODLE_DATABASE_NAME: ${MOODLE_DATABASE:?}
+
+      MOODLE_DATABASE_USER: root
+      MOODLE_DATABASE_PASSWORD: ${MARIADB_ROOT_PASSWORD:?}
+      MOODLE_USERNAME: ${MOODLE_USERNAME:?}
+      MOODLE_PASSWORD: ${MOODLE_PASSWORD:?}
+
+volumes:
+  mariadb_volume:
+    driver: local
+  moodle_volume:
+    driver: local
+  moodledata_volume:
+    driver: local
