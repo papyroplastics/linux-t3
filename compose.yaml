@@ -3,6 +3,7 @@ name: tarea-3
 services:
   mariadb:
     image: mariadb:lts-ubi9
+    restart: always
     environment:
       DATABASES: "${MOODLE_DATABASE:?} ${WORDPRESS_DATABASE:?}"
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?}
@@ -13,6 +14,7 @@ services:
 
   moodle:
     image: bitnami/moodle:4.5
+    restart: always
     depends_on:
       - mariadb
     ports:
@@ -33,6 +35,7 @@ services:
 
   wordpress:
     image: wordpress:6-apache
+    restart: always
     depends_on:
       - mariadb
     ports:
@@ -48,6 +51,7 @@ services:
 
   jellyfin:
     image: jellyfin/jellyfin
+    restart: always
     ports:
       - 8082:8096
     volumes:
@@ -57,6 +61,7 @@ services:
 
   nginx:
     image: nginx:stable-alpine
+    restart: always
     ports:
       - 80:80
     environment:
