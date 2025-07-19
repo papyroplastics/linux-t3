@@ -2,21 +2,23 @@
 
 echo "Creating custom databases"
 
-if [[ -z "$WORDPRESS_DATABASE" ]]; then
-    echo "WORDPRESS_DATABASE environment variable not set."
+if [[ -z "$DATABASES" ]]; then
+    echo "DATABASES environment variable not set."
     exit 1
-elif [[ -z "$MOODLE_DATABASE" ]]; then
-    echo "MOODLE_DATABASE environment variable not set."
+elif [[ -z "$MYSQL_ROOT_PASSWORD" ]]; then
+    echo "MYSQL_ROOT_PASSWORD environment variable not set."
     exit 1
 fi
 
-mysql -u root -p"$MYSQL_ROOT_PASSWORD" <<-EOSQL
-CREATE DATABASE IF NOT EXISTS \`$WORDPRESS_DATABASE\`;
-CREATE DATABASE IF NOT EXISTS \`$MOODLE_DATABASE\`;
+for dbname in $DATABASES; do
+    mysql -u root -p"$MYSQL_ROOT_PASSWORD" <<-EOSQL
+CREATE DATABASE IF NOT EXISTS \`$dbname\`;
 EOSQL
 
-if [[ $? != 0 ]]; then
-    echo "Error creating wordpress database"
-    exit 1
-fi
+    if [[ $? != 0 ]]; then
+        echo "Error creating database \"$dbname\""
+    else
+        echo "Created database \"$dbname\""
+    fi
+done
 

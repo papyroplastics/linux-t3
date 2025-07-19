@@ -4,8 +4,7 @@ services:
   mariadb:
     image: mariadb:lts-ubi9
     environment:
-      MOODLE_DATABASE: ${MOODLE_DATABASE:?}
-      WORDPRESS_DATABASE: ${WORDPRESS_DATABASE:?}
+      DATABASES: "${MOODLE_DATABASE:?} ${WORDPRESS_DATABASE:?}"
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?}
     volumes:
       - mariadb_volume:/var/lib/mysql
@@ -33,7 +32,7 @@ services:
       BITNAMI_DEBUG: ${DEBUG:?}
 
   wordpress:
-    image: bitnami/wordpress
+    image: wordpress:6-apache
     depends_on:
       - mariadb
     ports:
@@ -55,6 +54,16 @@ services:
       - jellyfin_config_volume:/config
       - jellyfin_cache_volume:/cache
       - ./jellyfin:/media
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - 80:80
+    environment:
+      HOSTS: "moodle:8080 wordpress:80 jellyfin:8096"
+    volumes:
+      - ./nginx/create-configs.sh:/docker-entrypoint.d/create-configs.sh
+      - ./nginx/template.conf:/etc/nginx/template.conf
 
 volumes:
   mariadb_volume:
